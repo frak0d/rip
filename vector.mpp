@@ -1,16 +1,19 @@
-export module rip.vector;
+export module rip:vector;
 
 import <vector>;
 import <iostream>;
 import <algorithm>;
 
+export
+{
+
 namespace rip
 {
 
 template <class T>
-struct lector : std::vector<T>
+struct vector : std::vector<T>
 {
-	lector(const std::initializer_list<T>& lst) : std::vector<T>(lst) {}
+	vector(const std::initializer_list<T>& lst) : std::vector<T>(lst) {}
 	
 	bool contains(const T& stuff) const
 	{
@@ -60,15 +63,17 @@ struct lector : std::vector<T>
 } // namespace rip
 
 template <class T>
-std::ostream& operator << (std::ostream& out, const lector<T>& lc)
+std::ostream& operator << (std::ostream& out, const rip::vector<T>& lc)
 {
 	lc.print(out);
 	return out;
 }
 
 template <class T>
-std::ostream& operator >> (const lector<T>& lc, std::ostream& out)
+std::ostream& operator >> (const rip::vector<T>& lc, std::ostream& out)
 {
 	lc.print(out);
 	return out;
 }
+
+} // export
