@@ -1,3 +1,4 @@
 export module rip;
 
 export import :vector;
+export import :image;
