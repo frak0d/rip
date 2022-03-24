@@ -4,12 +4,10 @@ import <cstdint>;
 import <cstring>;
 
 export
-{
-
 namespace rip
 {
 
-struct RGB_Image
+struct rgb_image
 {
 	using u8  = std::uint8_t;
 	using u32 = std::uint32_t;
@@ -45,19 +43,19 @@ struct RGB_Image
 		
 		int dx = x2 - x1;
 		int dy = y2 - y1;
-	
+		
 		int dLong = abs(dx);
 		int dShort = abs(dy);
-	
+		
 		int offsetLong = dx > 0 ? 1 : -1;
 		int offsetShort = dy > 0 ? width : -width;
-	
+		
 		if (dLong < dShort)
 		{
 			std::swap(dShort, dLong);
 			std::swap(offsetShort, offsetLong);
 		}
-	
+		
 		int error = dLong / 2;
 		int index = y1 * width + x1;
 		const int offset[] = {offsetLong, offsetLong + offsetShort};
@@ -76,20 +74,20 @@ struct RGB_Image
 	
 	void drawCircle()
 	{
-		
+		//TODO
+	}
+	
+	void drawTriangle()
+	{
+		//TODO
 	}
 	
 	void drawRectangle()
 	{
-		
-	}
-
-	void drawTriangle()
-	{
-		
+		//TODO
 	}
 	
-	void hflip()
+	void hflip2()
 	{
 		const u32 w3 = 3*width;
 		u8* tmp = new u8[w3]{};
@@ -97,8 +95,8 @@ struct RGB_Image
 		u8* p1 = pixels;
 		u8* p2 = pixels + w3*(height-1);
 		
-		const u32 lim = height % 2 ? (height-1)/2
-		                           : (height/2);
+		u32 lim = height % 2 ? (height-1)/2
+							 : (height/2);
 		
 		for (u32 y=0 ; y < lim ; ++y)
 		{
@@ -119,8 +117,8 @@ struct RGB_Image
 		const u32 w3 = 3*width;
 		const u32 w3m3 = w3 - 3;
 		
-		const u32 lim = width % 2 ? (width-1)/2
-		                          : (width/2);
+		u32 lim = width % 2 ? (width-1)/2
+							: (width/2);
 		
 		for (u32 x=0 ; x < lim ; ++x)
 		{
@@ -135,7 +133,6 @@ struct RGB_Image
 					*(p1+i) = *(p2+i);
 					*(p2+i) = tmp;
 				}
-				
 				p1 += w3; p2 += w3;
 			}
 		}
@@ -176,6 +173,173 @@ struct RGB_Image
 	}
 };
 
-} //namespace
 
-} //export
+struct rgba_image
+{
+	using u8  = std::uint8_t;
+	using u32 = std::uint32_t;
+	using u64 = std::uint64_t;
+	
+	u8* pixels;
+	u32 width, height;
+	
+	void clear()
+	{
+		delete[] pixels;
+		pixels = new u8[width*4ull*height]();
+	}
+	
+	void setPixel(u32 x, u32 y, u8 R=255, u8 G=255, u8 B=255, A=255)
+	{	
+		if (x > width or y > height) return;
+		
+		pixels[4*(x + width*y)]   = R;
+		pixels[4*(x + width*y)+1] = G;
+		pixels[4*(x + width*y)+2] = B;
+		pixels[4*(x + width*y)+3] = A;
+	}
+	
+	const u8* getPixel(u32 x, u32 y)
+	{
+		return pixels + 4*(x + width*(width-y));
+	}
+	
+	void drawLine(u32 x1, u32 y1, u32 x2, u32 y2, u8 R=255, u8 G=255, u8 B=255)
+	{
+		if (x1 > width or y1 > height) return;
+		if (x2 > width or y2 > height) return;
+		
+		int dx = x2 - x1;
+		int dy = y2 - y1;
+		
+		int dLong = abs(dx);
+		int dShort = abs(dy);
+		
+		int offsetLong = dx > 0 ? 1 : -1;
+		int offsetShort = dy > 0 ? width : -width;
+		
+		if (dLong < dShort)
+		{
+			std::swap(dShort, dLong);
+			std::swap(offsetShort, offsetLong);
+		}
+		
+		int error = dLong / 2;
+		int index = y1 * width + x1;
+		const int offset[] = {offsetLong, offsetLong + offsetShort};
+		const int abs_d[] = {dShort, dShort - dLong};
+		for (int i = 0; i <= dLong; ++i)
+		{
+			pixels[4*index]   = R;
+			pixels[4*index+1] = G;
+			pixels[4*index+2] = B;
+			pixels[4*index+3] = A;
+			
+			const int errorIsTooBig = error >= dLong;
+			index += offset[errorIsTooBig];
+			error += abs_d[errorIsTooBig];
+		}
+	}
+	
+	void drawCircle()
+	{
+		//TODO
+	}
+	
+	void drawTriangle()
+	{
+		//TODO
+	}
+	
+	void drawRectangle()
+	{
+		//TODO
+	}
+	
+	void hflip2()
+	{
+		const u32 w4 = 4*width;
+		u8* tmp = new u8[w4]{};
+		
+		u8* p1 = pixels;
+		u8* p2 = pixels + w4*(height-1);
+		
+		u32 lim = height % 2 ? (height-1)/2
+							 : (height/2);
+		
+		for (u32 y=0 ; y < lim ; ++y)
+		{
+			std::memcpy(tmp, p1, w4);
+			std::memcpy(p1,  p2, w4);
+			std::memcpy(p2, tmp, w4);
+			
+			p1 += w4; p2 -= w4;
+		}
+		
+		delete[] tmp;
+	}
+	
+	void vflip2()
+	{
+		u8 tmp = 0;
+		
+		const u32 w4 = 4*width;
+		const u32 w4m4 = w4 - 4;
+		
+		u32 lim = width % 2 ? (width-1)/2
+							: (width/2);
+		
+		for (u32 x=0 ; x < lim ; ++x)
+		{
+			u8* p1 = pixels + 4*x;
+			u8* p2 = pixels + w4m4 - 4*x;
+			
+			for (u32 y=0 ; y < height ; ++y)
+			{
+				for (u8 i=0 ; i < 4 ; ++i)
+				{
+					tmp     = *(p1+i);
+					*(p1+i) = *(p2+i);
+					*(p2+i) = tmp;
+				}
+				p1 += w4; p2 += w4;
+			}
+		}
+	}
+	
+	RGB_Image(u32 w, u32 h) : width(w), height(h)
+	{
+		pixels = new u8[width*4ull*height]();
+	}
+	
+	RGB_Image(const RGB_Image& img) : width(img.width), height(img.height)
+	{
+		pixels = new u8[width*4ull*height]();
+		std::memcpy(pixels, img.pixels, width*4ull*height);
+	}
+	
+	RGB_Image& operator= (const RGB_Image& img)
+	{
+		if (width != img.width or height != img.height)
+		{
+			width  = img.width;
+			height = img.height;
+			clear(); // need to reallocate if dimentions change
+		}
+		
+		std::memcpy(pixels, img.pixels, width*4ull*height);
+		return *this; // for chaining
+	}
+	
+	operator u8* ()
+	{
+		return pixels;
+	}
+	
+	~RGB_Image()
+	{
+		delete[] pixels;
+	}
+};
+
+}
