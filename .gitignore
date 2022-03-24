@@ -3,4 +3,9 @@
 *.so
 *.dll
 *.lib
+*.pch
+*.pdb
+*.exe
+
+build/
 gcm.cache/

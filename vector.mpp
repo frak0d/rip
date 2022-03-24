@@ -1,19 +1,16 @@
-export module rip:vector;
+export module rip:lector;
 
 import <vector>;
-import <iostream>;
 import <algorithm>;
 
 export
-{
-
 namespace rip
 {
 
-template <class T>
-struct vector : std::vector<T>
+template <typename T>
+struct lector : std::vector<T>
 {
-	vector(const std::initializer_list<T>& lst) : std::vector<T>(lst) {}
+	lector(const std::initializer_list<T>& lst) : std::vector<T>(lst) {}
 	
 	bool contains(const T& stuff) const
 	{
@@ -23,13 +20,9 @@ struct vector : std::vector<T>
 	void sort(bool decending=false)
 	{
 		if (decending)
-		{
 			std::sort(this->rbegin(), this->rend());
-		}
 		else
-		{
 			std::sort(this->begin(), this->end());
-		}
 	}
 	
 	void append(const std::initializer_list<T>& lst)
@@ -42,38 +35,30 @@ struct vector : std::vector<T>
 		std::reverse(this->begin(), this->end());
 	}
 	
-	void print(std::ostream& out) const
-	{
-		auto len = this->size();
-		out << "{";
-		for (auto i=0 ; i < len ; ++i)
-		{
-			out << (*this)[i];
-			if (i != len-1) out << ", ";
-		}
-		out << "}" << std::endl;
-	}
-	
 	auto length() const
 	{
 		return this->size();
 	}
 };
 
-} // namespace rip
-
-template <class T>
-std::ostream& operator << (std::ostream& out, const rip::vector<T>& lc)
-{
-	lc.print(out);
-	return out;
 }
 
-template <class T>
-std::ostream& operator >> (const rip::vector<T>& lc, std::ostream& out)
+////////////
+
+export module rip:lector:stream;
+
+import <iostream>;
+
+export template <class T>
+std::ostream& operator << (std::ostream& out, const rip::lector<T>& lc)
 {
-	lc.print(out);
+	auto len = lc.size();
+	out << "{";
+	for (auto i=0 ; i < len ; ++i)
+	{
+		out << (*this)[i];
+		if (i != len-1) out << ", ";
+	}
+	out << "}" << std::endl;
 	return out;
 }
-
-} // export

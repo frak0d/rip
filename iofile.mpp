@@ -1,0 +1,83 @@
+export module rip:iofile;
+
+import <cerrno>;
+import <cstdio>;
+import <cstring>;
+import <stdexcept>;
+
+#define ERROR_INFO std::string(strerror(errno))
+
+export
+namespace rip
+{
+
+class iofile
+{
+private:
+  FILE* fp = NULL;
+  
+public:
+  iofile(const char* fpath, const char* mode="r")
+  {
+    fp = fopen(fpath, mode);
+    if (fp == NULL)
+      throw std::runtime_error("iofile: Open Error: " + ERROR_INFO);
+  }
+  
+  [[nodiscard]]
+  inline
+  size_t tell()
+  {
+    auto pos = ftell(fp);
+    if (pos < 0)
+      throw std::runtime_error("iofile: Tell Error: " + ERROR_INFO);
+    return pos;
+  }
+  
+  inline
+  void seek(size_t pos)
+  {
+    if (fseek(fp, pos, SEEK_SET) < 0)
+      throw std::runtime_error("iofile: Seek Error: " + ERROR_INFO);
+  }
+  
+  inline
+  size_t read(void* buf, const size_t sz)
+  {
+    size_t rs = fread(buf, 1, sz, fp);
+    if (rs != sz && ferror(fp))
+      throw std::runtime_error("iofile: Read Error: " + ERROR_INFO);
+    return rs;
+  }
+  
+  inline
+  size_t write(const void* buf, const size_t sz)
+  {
+    size_t ws = fwrite(buf, 1, sz, fp);
+    if (ws != sz && ferror(fp))
+      throw std::runtime_error("iofile: Write Error: " + ERROR_INFO);
+    return ws;
+  }
+  
+  inline
+  void flush()
+  {
+    if (fflush(fp) == EOF)
+      throw std::runtime_error("File Flush Error!\n" + ERROR_INFO);
+  }
+  
+  inline
+  void close()
+  {
+    if (fclose(fp) == EOF)
+      throw std::runtime_error("File Close Error!\n" + ERROR_INFO);
+    fp = NULL;
+  }
+  
+ ~iofile()
+  {
+    if (fp) close();
+  }
+};
+
+}
