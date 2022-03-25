@@ -7,5 +7,5 @@ import rip; // imports everything except rip:vector:stream, because iostream is 
 import rip:image; // Simple in-memory HTML like canvas, RGB and RGBA variant
 import rip:lector; // std::vector extended with useful member functions
 import rip:iofile; // modernized cstdio, because fstream is bloat
-import rip:vector:stream; // additional functionality using iostreams
+import rip:lector:stream; // additional functionality using iostreams
 ```

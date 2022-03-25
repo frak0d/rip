@@ -25,8 +25,7 @@ public:
   }
   
   [[nodiscard]]
-  inline
-  size_t tell()
+  inline size_t tell()
   {
     auto pos = ftell(fp);
     if (pos < 0)
@@ -34,15 +33,46 @@ public:
     return pos;
   }
   
-  inline
-  void seek(size_t pos)
+  [[nodiscard]]
+  inline size_t cur()
+  {
+    return tell();
+  }
+  
+  [[nodiscard]]
+  inline bool eof()
+  {
+    return cur() == end();
+  }
+  
+  [[nodiscard]]
+  static constexpr
+  inline size_t beg()
+  {
+    return 0;
+  }
+  
+  [[nodiscard]]
+  inline size_t end()
+  {
+    auto pos = cur();
+    
+    if (fseek(fp, 0, SEEK_END) < 0)
+      throw std::runtime_error("iofile: Seek Error: " + ERROR_INFO);
+    
+    auto end = cur();
+    
+    seek(pos);
+    return end;
+  }
+  
+  inline void seek(size_t pos)
   {
     if (fseek(fp, pos, SEEK_SET) < 0)
       throw std::runtime_error("iofile: Seek Error: " + ERROR_INFO);
   }
   
-  inline
-  size_t read(void* buf, const size_t sz)
+  inline size_t read(void* buf, const size_t sz)
   {
     size_t rs = fread(buf, 1, sz, fp);
     if (rs != sz && ferror(fp))
@@ -50,8 +80,43 @@ public:
     return rs;
   }
   
-  inline
-  size_t write(const void* buf, const size_t sz)
+  inline std::string read(size_t n=0)
+  {
+    std::string str; str.resize(n);
+    fgets(str.data(), n, fp);
+    return str;
+  }
+  
+  inline std::wstring wread(size_t n=0)
+  {
+    std::wstring str; str.resize(n);
+    fgetws(str.data(), n, fp);
+    return str;
+  }
+  
+  inline std::string readln(char delim='\n')
+  {
+    std::string str; char ch = '\0';
+    while (ch != delim)
+    {
+      ch = fgetc(fp);
+      str += ch;
+    }
+    str.resize(str.size()-1); // remove delim
+    return str;
+  }
+  
+  inline void write(const std::string& str)
+  {
+    fputs(str.data(), fp);
+  }
+  
+  inline void write(const std::wstring& str)
+  {
+    fputws(str.data(), fp);
+  }
+  
+  inline size_t write(const void* buf, const size_t sz)
   {
     size_t ws = fwrite(buf, 1, sz, fp);
     if (ws != sz && ferror(fp))
@@ -59,18 +124,16 @@ public:
     return ws;
   }
   
-  inline
-  void flush()
+  inline void flush()
   {
     if (fflush(fp) == EOF)
-      throw std::runtime_error("File Flush Error!\n" + ERROR_INFO);
+      throw std::runtime_error("iofile: Flush Error: " + ERROR_INFO);
   }
   
-  inline
-  void close()
+  inline void close()
   {
     if (fclose(fp) == EOF)
-      throw std::runtime_error("File Close Error!\n" + ERROR_INFO);
+      throw std::runtime_error("iofile: Close Error: " + ERROR_INFO);
     fp = NULL;
   }
   
